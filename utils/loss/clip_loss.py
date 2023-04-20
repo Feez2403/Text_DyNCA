@@ -24,11 +24,13 @@ class CLIPLoss(torch.nn.Module):
         
         if "perspective" in args.clip_augemntations:
             self.augemntations.append(transforms.RandomPerspective(fill=0, p=1.0, distortion_scale=0.5))
-            self.augemntations.append(transforms.RandomResizedCrop(224, scale=(0.8, 0.8), ratio=(1.0, 1.0)))
-            
+            self.augemntations.append(transforms.RandomResizedCrop(336, scale=(0.8, 0.8), ratio=(1.0, 1.0)))
+        else : 
+            self.augemntations.append(transforms.Resize(336))
+ 
         if "affine" in args.clip_augemntations:
-            self.augemntations.append(transforms.RandomAffine(degrees=15, translate=0.1, shear=5, fill=0.0))
-            
+            self.augemntations.append(transforms.RandomAffine(degrees=15, translate=(0.08,0.12), shear=5, fill=0.0))
+
         self.augment_trans = transforms.Compose(self.augemntations)
             
         self._create_losses()
@@ -42,8 +44,9 @@ class CLIPLoss(torch.nn.Module):
         pass
 
     def forward(self, input_dict, return_summary=True):
-        generated_images = input_dict['generated_images'] # The images should be in range [0, 1]
-        
+        # print(len(input_dict['generated_image_list']), input_dict["generated_image_list"][-1].shape)
+        generated_images = input_dict['generated_image_list'][-1] # The images should be in range [0, 1]
+        # print(len(input_dict["generated_image_list"]))
         # augmented_images = self.make_cutouts(generated_images)
         augmented_images = self.augment_trans(generated_images)
         

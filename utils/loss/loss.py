@@ -2,8 +2,9 @@ import torch
 import numpy as np
 
 from utils.loss.vector_field_loss import VectorFieldMotionLoss
-from utils.loss.appearance_loss import AppearanceLoss
+#from utils.loss.appearance_loss import AppearanceLoss
 from utils.loss.video_motion_loss import VideoMotionLoss
+from utils.loss.clip_loss import CLIPLoss
 
 
 class Loss(torch.nn.Module):
@@ -40,7 +41,7 @@ class Loss(torch.nn.Module):
             self.loss_weights["vector_field_motion"] = self.vector_field_motion_loss_weight
 
         if self.appearance_loss_weight != 0:
-            self.loss_mapper["appearance"] = AppearanceLoss(self.args)
+            self.loss_mapper["appearance"] = CLIPLoss(self.args)
             self.loss_weights["appearance"] = self.appearance_loss_weight
 
         if self.video_motion_loss_weight != 0:
