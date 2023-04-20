@@ -44,17 +44,9 @@ class CLIPLoss(torch.nn.Module):
         pass
 
     def forward(self, input_dict, return_summary=True):
-        # print(len(input_dict['generated_image_list']), input_dict["generated_image_list"][-1].shape)
         for generated_images in input_dict["generated_image_list"]:
             
-            generated_images = input_dict['generated_image_list'][-1] # The images should be in range [0, 1]
-            # print(len(input_dict["generated_image_list"]))
-            # augmented_images = self.make_cutouts(generated_images)
             augmented_images = self.augment_trans(generated_images)
-            
-            
-            
-            
             normalized_images = self.normalize(augmented_images)
             image_features = self.model.encode_image(normalized_images)
             loss = 1.0 - torch.nn.functional.cosine_similarity(image_features, self.text_features, dim=1).mean()
