@@ -44,16 +44,18 @@ class CLIPLoss(torch.nn.Module):
         pass
 
     def forward(self, input_dict, return_summary=True):
+        loss = torch.tensor(0.0, dtype=torch.float16).to(self.args.DEVICE)
         for generated_images in input_dict["generated_image_list"]:
             
             augmented_images = self.augment_trans(generated_images)
             normalized_images = self.normalize(augmented_images)
             image_features = self.model.encode_image(normalized_images)
-            loss = 1.0 - torch.nn.functional.cosine_similarity(image_features, self.text_features, dim=1).mean()
+            loss += 1.0 - torch.nn.functional.cosine_similarity(image_features, self.text_features, dim=1).mean()
+            #print(generated_images.shape)
+        #print(loss, len(input_dict["generated_image_list"]))
+
         loss /= len(input_dict["generated_image_list"])
-
         return loss, None, None
-
 
 # class MakeCutouts(torch.nn.Module):
 #     def __init__(self, cut_size, args):
