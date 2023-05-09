@@ -2,7 +2,7 @@
 
 .idea
 
-*.pth
+
 *.pt
 *.mp4
 *.avi
