@@ -31,7 +31,8 @@ class DyNCA(torch.nn.Module):
                  padding_mode='replicate',
                  seed_mode='zeros', pos_emb='CPE',
                  perception_scales=[0],
-                 device=torch.device("cuda:0")):
+                 device=torch.device("cuda:0"),
+                 no_update_mask = None):
 
         super().__init__()
         self.c_in = c_in
@@ -67,6 +68,8 @@ class DyNCA(torch.nn.Module):
         self.identity_filter = torch.FloatTensor([[0, 0, 0], [0, 1, 0], [0, 0, 0]]).to(self.device)
         self.laplacian_filter = torch.FloatTensor([[1.0, 2.0, 1.0], [2.0, -12, 2.0], [1.0, 2.0, 1.0]]).to(
             self.device)
+
+        self.no_update_mask = no_update_mask
 
     def perceive_torch(self, x, scale=0):
         assert scale in [0, 1, 2, 3, 4, 5]
@@ -117,9 +120,10 @@ class DyNCA(torch.nn.Module):
             y_percept = self.perceive_multiscale(x)
         y = self.w2(F.relu(self.w1(y_percept)))
         b, c, h, w = y.shape
-
+        
         update_mask = (torch.rand(b, 1, h, w) + update_rate).floor().to(self.device)
-
+        if self.no_update_mask is not None:
+            update_mask = update_mask & ~self.no_update_mask
         x = x + y * update_mask
 
         if return_perception:
